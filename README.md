@@ -1,4 +1,4 @@
-# middlewares/path
+# middlewares/prefix-router
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Software License][ico-license]](LICENSE)
@@ -16,17 +16,17 @@ A middleware dispatching to other middleware stacks, based on different path pre
 
 ## Installation
 
-This package is installable and autoloadable via Composer as [middlewares/path](https://packagist.org/packages/middlewares/path).
+This package is installable and autoloadable via Composer as [middlewares/prefix-router](https://packagist.org/packages/middlewares/prefix-router).
 
 ```sh
-composer require middlewares/path
+composer require middlewares/prefix-router
 ```
 
 ## Example
 
 ```php
 $dispatcher = new Dispatcher([
-	new Middlewares\Path([
+	new Middlewares\PrefixRouter([
 	    '/prefix1' => $middleware1,
 	    '/prefix2' => $middleware2,
 	    '/prefix3' => $middleware3,
@@ -42,13 +42,13 @@ Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes a
 
 The MIT License (MIT). Please see [LICENSE](LICENSE) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/middlewares/path.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/middlewares/prefix-router.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/middlewares/path/master.svg?style=flat-square
-[ico-scrutinizer]: https://img.shields.io/scrutinizer/g/middlewares/path.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/middlewares/path.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/middlewares/prefix-router/master.svg?style=flat-square
+[ico-scrutinizer]: https://img.shields.io/scrutinizer/g/middlewares/prefix-router.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/middlewares/prefix-router.svg?style=flat-square
 
-[link-packagist]: https://packagist.org/packages/middlewares/path
-[link-travis]: https://travis-ci.org/middlewares/path
-[link-scrutinizer]: https://scrutinizer-ci.com/g/middlewares/path
-[link-downloads]: https://packagist.org/packages/middlewares/path
+[link-packagist]: https://packagist.org/packages/middlewares/prefix-router
+[link-travis]: https://travis-ci.org/middlewares/prefix-router
+[link-scrutinizer]: https://scrutinizer-ci.com/g/middlewares/prefix-router
+[link-downloads]: https://packagist.org/packages/middlewares/prefix-router

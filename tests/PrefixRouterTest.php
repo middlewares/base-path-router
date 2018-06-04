@@ -2,18 +2,18 @@
 
 namespace Middlewares\Tests;
 
-use Middlewares\Path;
+use Middlewares\PrefixRouter;
 use Middlewares\Utils\CallableHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 
-class PathTest extends TestCase
+class PrefixRouterTest extends TestCase
 {
     public function testRoutingToPathsWorks()
     {
-        $middleware = new Path([
+        $middleware = new PrefixRouter([
             '/foo' => $this->middlewareReturning('something'),
             '/bar' => $this->middlewareReturning('something else'),
         ]);
@@ -37,7 +37,7 @@ class PathTest extends TestCase
 
     public function testRoutingToPathsUsesMostSpecificPrefix()
     {
-        $middleware = new Path([
+        $middleware = new PrefixRouter([
             '/foo' => $this->middlewareReturning('shorter'),
             '/foo/longer' => $this->middlewareReturning('longer'),
         ]);
@@ -53,7 +53,7 @@ class PathTest extends TestCase
 
     public function testRoutingToPathsIsOptional()
     {
-        $middleware = new Path([
+        $middleware = new PrefixRouter([
             '/foo' => $this->middlewareReturning('something'),
         ]);
         $fallback = $this->middlewareReturning('fallback');
@@ -69,7 +69,7 @@ class PathTest extends TestCase
 
     public function testPathMiddlewareReceivesRequestWithoutPrefix()
     {
-        $middleware = new Path([
+        $middleware = new PrefixRouter([
             '/foo' => $this->middlewareReturningRequestPath(),
         ]);
 
@@ -84,7 +84,7 @@ class PathTest extends TestCase
 
     public function testPathMiddlewareWillCallHandlerWithPrefix()
     {
-        $middleware = new Path([
+        $middleware = new PrefixRouter([
             '/foo' => $this->middlewareDispatchingToHandler(),
         ]);
 

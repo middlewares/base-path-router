@@ -9,7 +9,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface as Middleware;
 use Psr\Http\Server\RequestHandlerInterface as Handler;
 
-class Path implements Middleware
+class PrefixRouter implements Middleware
 {
     /** @var array */
     private $middlewares;
