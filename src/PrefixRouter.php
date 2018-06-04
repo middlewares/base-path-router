@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Middlewares;
 
-use Middlewares\PathUtil\PrefixingHandler;
+use Middlewares\Utils\Factory;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface as Middleware;
@@ -30,14 +30,14 @@ class PrefixRouter implements Middleware
 
         foreach ($this->middlewares as $pathPrefix => $middleware) {
             if (strpos($requestPath, $pathPrefix) === 0) {
-                return $middleware->process(
-                    $this->unprefixedRequest($request, $pathPrefix),
-                    $this->prefixedHandler($handler, $pathPrefix)
+                return $handler->handle(
+                    $this->unprefixedRequest($request, $pathPrefix)
+                        ->withAttribute('request-handler', $middleware)
                 );
             }
         }
 
-        return $handler->handle($request);
+        return Factory::createResponse(404);
     }
 
     private function unprefixedRequest(Request $request, string $prefix): Request
@@ -48,11 +48,6 @@ class PrefixRouter implements Middleware
                 substr($uri->getPath(), strlen($prefix))
             )
         );
-    }
-
-    private function prefixedHandler(Handler $handler, string $prefix): Handler
-    {
-        return new PrefixingHandler($handler, $prefix);
     }
 
     private function getNormalizedPath(Request $request): string

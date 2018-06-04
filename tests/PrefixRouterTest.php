@@ -4,117 +4,86 @@ namespace Middlewares\Tests;
 
 use Middlewares\PrefixRouter;
 use Middlewares\Utils\CallableHandler;
-use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 class PrefixRouterTest extends TestCase
 {
-    public function testRoutingToPathsWorks()
+    public function testRoutingToPrefixesWorks()
     {
         $middleware = new PrefixRouter([
-            '/foo' => $this->middlewareReturning('something'),
-            '/bar' => $this->middlewareReturning('something else'),
+            '/foo' => 'something',
+            '/bar' => 'something else',
         ]);
 
-        $fooResponse = Dispatcher::run(
-            [$middleware],
-            Factory::createServerRequest([], 'GET', '/foo/foopath')
+        $fooResponse = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/foo/foopath'),
+            $this->returningRequestAttribute()
         );
 
-        $barResponse = Dispatcher::run(
-            [$middleware],
-            Factory::createServerRequest([], 'GET', '/bar')
+        $barResponse = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/bar'),
+            $this->returningRequestAttribute()
         );
 
-        $this->assertInstanceOf(ResponseInterface::class, $fooResponse);
         $this->assertSame('something', (string) $fooResponse->getBody());
-
-        $this->assertInstanceOf(ResponseInterface::class, $barResponse);
         $this->assertSame('something else', (string) $barResponse->getBody());
     }
 
-    public function testRoutingToPathsUsesMostSpecificPrefix()
+    public function testRoutingToPrefixesUsesMostSpecificPrefix()
     {
         $middleware = new PrefixRouter([
-            '/foo' => $this->middlewareReturning('shorter'),
-            '/foo/longer' => $this->middlewareReturning('longer'),
+            '/foo' => 'shorter',
+            '/foo/longer' => 'longer',
         ]);
 
-        $response = Dispatcher::run(
-            [$middleware],
-            Factory::createServerRequest([], 'GET', '/foo/longer/path')
+        $response = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/foo/longer/path'),
+            $this->returningRequestAttribute()
         );
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertSame('longer', (string) $response->getBody());
     }
 
-    public function testRoutingToPathsIsOptional()
+    public function testUnknownPrefixResultsIn404()
     {
         $middleware = new PrefixRouter([
-            '/foo' => $this->middlewareReturning('something'),
+            '/foo' => 'something',
         ]);
-        $fallback = $this->middlewareReturning('fallback');
 
-        $response = Dispatcher::run(
-            [$middleware, $fallback],
-            Factory::createServerRequest([], 'GET', '/optional')
+        $response = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/unknown'),
+            $this->returningRequestAttribute()
         );
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertSame('fallback', (string) $response->getBody());
+        $this->assertSame(404, $response->getStatusCode());
     }
 
-    public function testPathMiddlewareReceivesRequestWithoutPrefix()
+    public function testNextMiddlewareReceivesRequestWithoutPrefix()
     {
         $middleware = new PrefixRouter([
-            '/foo' => $this->middlewareReturningRequestPath(),
+            '/foo' => 'foo.middleware',
         ]);
 
-        $response = Dispatcher::run(
-            [$middleware],
-            Factory::createServerRequest([], 'GET', '/foo/mypath')
+        $response = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/foo/mypath'),
+            $this->returningRequestPath() // as handler
         );
 
-        $this->assertInstanceOf(ResponseInterface::class, $response);
         $this->assertSame('/mypath', (string) $response->getBody());
     }
 
-    public function testPathMiddlewareWillCallHandlerWithPrefix()
+    private function returningRequestAttribute()
     {
-        $middleware = new PrefixRouter([
-            '/foo' => $this->middlewareDispatchingToHandler(),
-        ]);
-
-        $response = Dispatcher::run(
-            [$middleware, $this->middlewareReturningRequestPath()],
-            Factory::createServerRequest([], 'GET', '/foo/mypath')
-        );
-
-        $this->assertInstanceOf(ResponseInterface::class, $response);
-        $this->assertSame('/foo/mypath', (string) $response->getBody());
-    }
-
-    private function middlewareReturning(string $val)
-    {
-        return new CallableHandler(function () use ($val) {
-            return $val;
+        return new CallableHandler(function ($req) {
+            return $req->getAttribute('request-handler');
         });
     }
 
-    private function middlewareReturningRequestPath()
+    private function returningRequestPath()
     {
         return new CallableHandler(function ($req) {
             return $req->getUri()->getPath();
-        });
-    }
-
-    private function middlewareDispatchingToHandler()
-    {
-        return new CallableHandler(function ($req, $h) {
-            return $h->handle($req);
         });
     }
 }
