@@ -14,6 +14,9 @@ class PrefixRouter implements Middleware
     /** @var array */
     private $middlewares;
 
+    /** @var bool */
+    private $stripPrefix = true;
+
     /** @var Handler */
     private $defaultHandler;
 
@@ -25,6 +28,26 @@ class PrefixRouter implements Middleware
         // (otherwise, a path /foo would always match, even when /foo/bar
         // should match).
         krsort($this->middlewares);
+    }
+
+    /**
+     * Should the matched prefix be stripped from the request?
+     *
+     * This method allows disabling the stripping of matching request prefixes.
+     * By default, the router strips matching prefixes from the URI path before
+     * passing on the request to subsequent middleware / request handlers.
+     *
+     * When this method is called without parameters, the default (enable prefix
+     * stripping) will be used.
+     *
+     * @param bool $strip
+     * @return $this
+     */
+    public function stripPrefix($strip = true)
+    {
+        $this->stripPrefix = $strip;
+
+        return $this;
     }
 
     /**
@@ -61,6 +84,10 @@ class PrefixRouter implements Middleware
 
     private function unprefixedRequest(Request $request, string $prefix): Request
     {
+        if (! $this->stripPrefix) {
+            return $request;
+        }
+
         $uri = $request->getUri();
         return $request->withUri(
             $uri->withPath(

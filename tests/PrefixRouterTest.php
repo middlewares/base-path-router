@@ -86,6 +86,19 @@ class PrefixRouterTest extends TestCase
         $this->assertSame('/mypath', (string) $response->getBody());
     }
 
+    public function testPrefixStrippingCanBeDisabled()
+    {
+        $middleware = (new PrefixRouter(['/foo' => 'foo.middleware']))
+            ->stripPrefix(false);
+
+        $response = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/foo/mypath'),
+            $this->returningRequestPath() // as handler
+        );
+
+        $this->assertSame('/foo/mypath', (string) $response->getBody());
+    }
+
     private function returningRequestAttribute()
     {
         return new CallableHandler(function ($req) {
