@@ -22,7 +22,7 @@ This package is installable and autoloadable via Composer as [middlewares/base-p
 composer require middlewares/base-path-router
 ```
 
-## Example
+## Usage
 
 ```php
 $dispatcher = new Dispatcher([
@@ -34,6 +34,35 @@ $dispatcher = new Dispatcher([
 ]);
 
 $response = $dispatcher->dispatch(new ServerRequest());
+```
+
+### Options
+
+#### Default request handler
+
+By default, non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes) will result in an empty 404 response.
+
+This behavior can be changed with the `defaultHandler` method:
+
+```php
+$router = (new Middlewares\BasePathRouter([
+              '/prefix1' => $middleware1,
+          ]))->defaultHandler($handler);
+```
+
+The handler needs to be a valid PSR-15 request handler.
+
+#### Stripping path prefixes
+
+By default, subsequent middleware will receive a slightly manipulated request object: any matching path prefixes will be stripped from the URI.
+This helps when you have a hierarchical setup of routers, where subsequent routers (e.g. one for the API stack mounted under the `/api` endpoint) can ignore the common prefix.
+
+If you want to disable this behavior, use the `stripPrefix` method:
+
+```php
+$router = (new Middlewares\BasePathRouter([
+              '/prefix1' => $middleware1,
+          ]))->stripPrefix(false);
 ```
 
 ---
