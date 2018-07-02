@@ -26,11 +26,11 @@ composer require middlewares/base-path-router
 
 ```php
 $dispatcher = new Dispatcher([
-	new Middlewares\BasePathRouter([
-	    '/prefix1' => $middleware1,
-	    '/prefix2' => $middleware2,
-	    '/prefix3' => $middleware3,
-	])
+    new Middlewares\BasePathRouter([
+        '/prefix1' => $middleware1,
+        '/prefix2' => $middleware2,
+        '/prefix3' => $middleware3,
+    ])
 ]);
 
 $response = $dispatcher->dispatch(new ServerRequest());
