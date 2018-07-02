@@ -14,6 +14,9 @@ class PrefixRouter implements Middleware
     /** @var array */
     private $middlewares;
 
+    /** @var Handler */
+    private $defaultHandler;
+
     public function __construct(array $middlewares)
     {
         $this->middlewares = $middlewares;
@@ -22,6 +25,22 @@ class PrefixRouter implements Middleware
         // (otherwise, a path /foo would always match, even when /foo/bar
         // should match).
         krsort($this->middlewares);
+    }
+
+    /**
+     * Provide a default request handler
+     *
+     * This request handler will be called with the current request whenever no
+     * prefix matches. By default, an empty 404 response will be returned.
+     *
+     * @param Handler $handler
+     * @return $this
+     */
+    public function defaultHandler(Handler $handler)
+    {
+        $this->defaultHandler = $handler;
+
+        return $this;
     }
 
     public function process(Request $request, Handler $handler): Response
@@ -37,7 +56,7 @@ class PrefixRouter implements Middleware
             }
         }
 
-        return Factory::createResponse(404);
+        return $this->defaultResponse($request);
     }
 
     private function unprefixedRequest(Request $request, string $prefix): Request
@@ -58,5 +77,14 @@ class PrefixRouter implements Middleware
         }
 
         return $path;
+    }
+
+    private function defaultResponse(Request $request)
+    {
+        if ($this->defaultHandler) {
+            return $this->defaultHandler->handle($request);
+        }
+
+        return Factory::createResponse(404);
     }
 }

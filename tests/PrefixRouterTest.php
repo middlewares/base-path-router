@@ -59,6 +59,19 @@ class PrefixRouterTest extends TestCase
         $this->assertSame(404, $response->getStatusCode());
     }
 
+    public function testUnknownPrefixWithCustomDefaultHandler()
+    {
+        $middleware = (new PrefixRouter(['/foo' => 'something']))
+            ->defaultHandler($this->returningRequestPath());
+
+        $response = $middleware->process(
+            Factory::createServerRequest([], 'GET', '/unknown'),
+            $this->returningRequestAttribute()
+        );
+
+        $this->assertSame('/unknown', (string) $response->getBody());
+    }
+
     public function testNextMiddlewareReceivesRequestWithoutPrefix()
     {
         $middleware = new PrefixRouter([
