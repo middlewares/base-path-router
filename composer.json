@@ -1,5 +1,5 @@
 {
-    "name": "middlewares/prefix-router",
+    "name": "middlewares/base-path-router",
     "type": "library",
     "description": "A PSR-15 middleware for hierarchical dispatching based on path prefixes",
     "license": "MIT",
@@ -11,9 +11,9 @@
         "http",
         "routing"
     ],
-    "homepage": "https://github.com/middlewares/prefix-router",
+    "homepage": "https://github.com/middlewares/base-path-router",
     "support": {
-        "issues": "https://github.com/middlewares/prefix-router/issues"
+        "issues": "https://github.com/middlewares/base-path-router/issues"
     },
     "require": {
         "php": "^7.0",

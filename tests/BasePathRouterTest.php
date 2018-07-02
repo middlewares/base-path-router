@@ -2,26 +2,26 @@
 
 namespace Middlewares\Tests;
 
-use Middlewares\PrefixRouter;
+use Middlewares\BasePathRouter;
 use Middlewares\Utils\CallableHandler;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
 
-class PrefixRouterTest extends TestCase
+class BasePathRouterTest extends TestCase
 {
     public function testRoutingToPrefixesWorks()
     {
-        $middleware = new PrefixRouter([
+        $router = new BasePathRouter([
             '/foo' => 'something',
             '/bar' => 'something else',
         ]);
 
-        $fooResponse = $middleware->process(
+        $fooResponse = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/foopath'),
             $this->returningRequestAttribute()
         );
 
-        $barResponse = $middleware->process(
+        $barResponse = $router->process(
             Factory::createServerRequest([], 'GET', '/bar'),
             $this->returningRequestAttribute()
         );
@@ -32,12 +32,12 @@ class PrefixRouterTest extends TestCase
 
     public function testRoutingToPrefixesUsesMostSpecificPrefix()
     {
-        $middleware = new PrefixRouter([
+        $router = new BasePathRouter([
             '/foo' => 'shorter',
             '/foo/longer' => 'longer',
         ]);
 
-        $response = $middleware->process(
+        $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/longer/path'),
             $this->returningRequestAttribute()
         );
@@ -47,11 +47,11 @@ class PrefixRouterTest extends TestCase
 
     public function testUnknownPrefixResultsIn404()
     {
-        $middleware = new PrefixRouter([
+        $router = new BasePathRouter([
             '/foo' => 'something',
         ]);
 
-        $response = $middleware->process(
+        $response = $router->process(
             Factory::createServerRequest([], 'GET', '/unknown'),
             $this->returningRequestAttribute()
         );
@@ -61,10 +61,10 @@ class PrefixRouterTest extends TestCase
 
     public function testUnknownPrefixWithCustomDefaultHandler()
     {
-        $middleware = (new PrefixRouter(['/foo' => 'something']))
+        $router = (new BasePathRouter(['/foo' => 'something']))
             ->defaultHandler($this->returningRequestPath());
 
-        $response = $middleware->process(
+        $response = $router->process(
             Factory::createServerRequest([], 'GET', '/unknown'),
             $this->returningRequestAttribute()
         );
@@ -74,11 +74,11 @@ class PrefixRouterTest extends TestCase
 
     public function testNextMiddlewareReceivesRequestWithoutPrefix()
     {
-        $middleware = new PrefixRouter([
+        $router = new BasePathRouter([
             '/foo' => 'foo.middleware',
         ]);
 
-        $response = $middleware->process(
+        $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/mypath'),
             $this->returningRequestPath() // as handler
         );
@@ -88,10 +88,10 @@ class PrefixRouterTest extends TestCase
 
     public function testPrefixStrippingCanBeDisabled()
     {
-        $middleware = (new PrefixRouter(['/foo' => 'foo.middleware']))
+        $router = (new BasePathRouter(['/foo' => 'foo.middleware']))
             ->stripPrefix(false);
 
-        $response = $middleware->process(
+        $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/mypath'),
             $this->returningRequestPath() // as handler
         );
