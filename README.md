@@ -43,7 +43,7 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 **BasePathRouter** allows anything to be defined as the router handler (a closure, callback, action object, controller class, etc). The middleware will store this handler in a request attribute.
 
-### Options
+## Options
 
 #### `defaultHandler(mixed $handler)`
 
@@ -76,7 +76,7 @@ $router = (new Middlewares\BasePathRouter([
           ]))->stripPrefix(false);
 ```
 
-### `attribute(string $attribute)`
+#### `attribute(string $attribute)`
 
 The attribute name used to store the handler in the server request. The default attribute name is `request-handler`.
 
