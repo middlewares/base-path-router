@@ -45,6 +45,10 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 ## Options
 
+#### `__construct(array $middlewares)`
+
+Array with the paths (as keys) and handlers (as values).
+
 #### `defaultHandler(mixed $handler)`
 
 By default, non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes) will result in an empty 404 response.
