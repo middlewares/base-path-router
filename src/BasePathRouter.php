@@ -4,21 +4,32 @@ declare(strict_types = 1);
 namespace Middlewares;
 
 use Middlewares\Utils\Factory;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Server\MiddlewareInterface as Middleware;
-use Psr\Http\Server\RequestHandlerInterface as Handler;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class BasePathRouter implements Middleware
+class BasePathRouter implements MiddlewareInterface
 {
-    /** @var array */
+    /**
+     * @var array
+     */
     private $middlewares;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     private $stripPrefix = true;
 
-    /** @var Handler */
+    /**
+     * @var Handler
+     */
     private $defaultHandler;
+
+    /**
+     * @var string Attribute name for handler reference
+     */
+    private $attribute = 'request-handler';
 
     public function __construct(array $middlewares)
     {
@@ -31,6 +42,16 @@ class BasePathRouter implements Middleware
     }
 
     /**
+     * Set the attribute name to store handler reference.
+     */
+    public function attribute(string $attribute): self
+    {
+        $this->attribute = $attribute;
+
+        return $this;
+    }
+
+    /**
      * Should the matched prefix be stripped from the request?
      *
      * This method allows disabling the stripping of matching request prefixes.
@@ -39,11 +60,8 @@ class BasePathRouter implements Middleware
      *
      * When this method is called without parameters, the default (enable prefix
      * stripping) will be used.
-     *
-     * @param bool $strip
-     * @return $this
      */
-    public function stripPrefix($strip = true)
+    public function stripPrefix(bool $strip = true): self
     {
         $this->stripPrefix = $strip;
 
@@ -53,20 +71,22 @@ class BasePathRouter implements Middleware
     /**
      * Provide a default request handler
      *
-     * This request handler will be called with the current request whenever no
+     * This request handler will be assigned to the current request whenever no
      * prefix matches. By default, an empty 404 response will be returned.
      *
-     * @param Handler $handler
-     * @return $this
+     * @param mixed $handler
      */
-    public function defaultHandler(Handler $handler)
+    public function defaultHandler($handler): self
     {
         $this->defaultHandler = $handler;
 
         return $this;
     }
 
-    public function process(Request $request, Handler $handler): Response
+    /**
+     * Process a server request and return a response.
+     */
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $requestPath = $this->getNormalizedPath($request);
 
@@ -74,21 +94,28 @@ class BasePathRouter implements Middleware
             if (strpos($requestPath, $pathPrefix) === 0) {
                 return $handler->handle(
                     $this->unprefixedRequest($request, $pathPrefix)
-                        ->withAttribute('request-handler', $middleware)
+                        ->withAttribute($this->attribute, $middleware)
                 );
             }
         }
 
-        return $this->defaultResponse($request);
+        if ($this->defaultHandler) {
+            return $handler->handle(
+                $request->withAttribute($this->attribute, $this->defaultHandler)
+            );
+        }
+
+        return Factory::createResponse(404);
     }
 
-    private function unprefixedRequest(Request $request, string $prefix): Request
+    private function unprefixedRequest(ServerRequestInterface $request, string $prefix): ServerRequestInterface
     {
-        if (! $this->stripPrefix) {
+        if (!$this->stripPrefix) {
             return $request;
         }
 
         $uri = $request->getUri();
+
         return $request->withUri(
             $uri->withPath(
                 substr($uri->getPath(), strlen($prefix))
@@ -96,9 +123,10 @@ class BasePathRouter implements Middleware
         );
     }
 
-    private function getNormalizedPath(Request $request): string
+    private function getNormalizedPath(ServerRequestInterface $request): string
     {
         $path = $request->getUri()->getPath();
+
         if (empty($path)) {
             $path = '/';
         }
@@ -106,7 +134,7 @@ class BasePathRouter implements Middleware
         return $path;
     }
 
-    private function defaultResponse(Request $request)
+    private function defaultResponse(ServerRequestInterface $request)
     {
         if ($this->defaultHandler) {
             return $this->defaultHandler->handle($request);

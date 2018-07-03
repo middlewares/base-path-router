@@ -4,30 +4,43 @@ namespace Middlewares\Tests;
 
 use Middlewares\BasePathRouter;
 use Middlewares\Utils\CallableHandler;
+use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
 
 class BasePathRouterTest extends TestCase
 {
-    public function testRoutingToPrefixesWorks()
+    public function routerDataProvider()
     {
-        $router = new BasePathRouter([
-            '/foo' => 'something',
-            '/bar' => 'something else',
-        ]);
+        return [
+            ['/foo/foopath', 'something --- /foopath'],
+            ['/bar', 'something else --- '],
+            ['/not-found', 'unknown --- /not-found'],
+        ];
+    }
 
-        $fooResponse = $router->process(
-            Factory::createServerRequest([], 'GET', '/foo/foopath'),
-            $this->returningRequestAttribute()
+    /**
+     * @dataProvider routerDataProvider
+     */
+    public function testRoutingToPrefixesWorks(string $path, string $body)
+    {
+        $response = Dispatcher::run(
+            [
+                (new BasePathRouter([
+                    '/foo' => 'something',
+                    '/bar' => 'something else',
+                ]))->defaultHandler('unknown'),
+
+                function ($request) {
+                    echo $request->getAttribute('request-handler');
+                    echo ' --- ';
+                    echo $request->getUri()->getPath();
+                },
+            ],
+            Factory::createServerRequest([], 'GET', $path)
         );
 
-        $barResponse = $router->process(
-            Factory::createServerRequest([], 'GET', '/bar'),
-            $this->returningRequestAttribute()
-        );
-
-        $this->assertSame('something', (string) $fooResponse->getBody());
-        $this->assertSame('something else', (string) $barResponse->getBody());
+        $this->assertSame($body, (string) $response->getBody());
     }
 
     public function testRoutingToPrefixesUsesMostSpecificPrefix()
@@ -39,7 +52,7 @@ class BasePathRouterTest extends TestCase
 
         $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/longer/path'),
-            $this->returningRequestAttribute()
+            self::returningRequestAttribute()
         );
 
         $this->assertSame('longer', (string) $response->getBody());
@@ -53,23 +66,10 @@ class BasePathRouterTest extends TestCase
 
         $response = $router->process(
             Factory::createServerRequest([], 'GET', '/unknown'),
-            $this->returningRequestAttribute()
+            self::returningRequestAttribute()
         );
 
         $this->assertSame(404, $response->getStatusCode());
-    }
-
-    public function testUnknownPrefixWithCustomDefaultHandler()
-    {
-        $router = (new BasePathRouter(['/foo' => 'something']))
-            ->defaultHandler($this->returningRequestPath());
-
-        $response = $router->process(
-            Factory::createServerRequest([], 'GET', '/unknown'),
-            $this->returningRequestAttribute()
-        );
-
-        $this->assertSame('/unknown', (string) $response->getBody());
     }
 
     public function testNextMiddlewareReceivesRequestWithoutPrefix()
@@ -80,7 +80,7 @@ class BasePathRouterTest extends TestCase
 
         $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/mypath'),
-            $this->returningRequestPath() // as handler
+            self::returningRequestPath()
         );
 
         $this->assertSame('/mypath', (string) $response->getBody());
@@ -93,20 +93,20 @@ class BasePathRouterTest extends TestCase
 
         $response = $router->process(
             Factory::createServerRequest([], 'GET', '/foo/mypath'),
-            $this->returningRequestPath() // as handler
+            self::returningRequestPath()
         );
 
         $this->assertSame('/foo/mypath', (string) $response->getBody());
     }
 
-    private function returningRequestAttribute()
+    private static function returningRequestAttribute()
     {
         return new CallableHandler(function ($req) {
             return $req->getAttribute('request-handler');
         });
     }
 
-    private function returningRequestPath()
+    private static function returningRequestPath()
     {
         return new CallableHandler(function ($req) {
             return $req->getUri()->getPath();

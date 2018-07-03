@@ -11,7 +11,7 @@ A middleware dispatching to other middleware stacks, based on different path pre
 ## Requirements
 
 * PHP >= 7.0
-* A [PSR-7](https://packagist.org/providers/psr/http-message-implementation) http message implementation ([Diactoros](https://github.com/zendframework/zend-diactoros), [Guzzle](https://github.com/guzzle/psr7), [Slim](https://github.com/slimphp/Slim), etc...)
+* A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 
 ## Installation
@@ -22,37 +22,48 @@ This package is installable and autoloadable via Composer as [middlewares/base-p
 composer require middlewares/base-path-router
 ```
 
+You may also want to install [middlewares/request-handler](https://packagist.org/packages/middlewares/request-handler).
+
 ## Usage
+
+This example uses [middleware/request-handler](https://github.com/middlewares/request-handler) to execute the route handler:
 
 ```php
 $dispatcher = new Dispatcher([
     new Middlewares\BasePathRouter([
-        '/prefix1' => $middleware1,
-        '/prefix2' => $middleware2,
-        '/prefix3' => $middleware3,
-    ])
+        '/admin' => $admin,
+        '/admin/login' => $adminLogin,
+        '/blog' => $blog,
+    ]),
+    new Middlewares\RequestHandler()
 ]);
 
 $response = $dispatcher->dispatch(new ServerRequest());
 ```
 
+**BasePathRouter** allows anything to be defined as the router handler (a closure, callback, action object, controller class, etc). The middleware will store this handler in a request attribute.
+
 ### Options
 
-#### Default request handler
+#### `defaultHandler(mixed $handler)`
 
 By default, non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes) will result in an empty 404 response.
 
-This behavior can be changed with the `defaultHandler` method:
+This behavior can be changed with the `defaultHandler` method, to assign a default handler to all remaining requests.
 
 ```php
-$router = (new Middlewares\BasePathRouter([
-              '/prefix1' => $middleware1,
-          ]))->defaultHandler($handler);
+$dispatcher = new Dispatcher([
+    (new Middlewares\BasePathRouter([
+        '/admin' => $admin,
+        '/admin/login' => $adminLogin,
+        '/blog' => $blog,
+    ]))->defaultHandler($everythingElse),
+
+    new Middlewares\RequestHandler()
+]);
 ```
 
-The handler needs to be a valid PSR-15 request handler.
-
-#### Stripping path prefixes
+#### `stripPrefix(bool $stripPrefix)`
 
 By default, subsequent middleware will receive a slightly manipulated request object: any matching path prefixes will be stripped from the URI.
 This helps when you have a hierarchical setup of routers, where subsequent routers (e.g. one for the API stack mounted under the `/api` endpoint) can ignore the common prefix.
@@ -64,6 +75,10 @@ $router = (new Middlewares\BasePathRouter([
               '/prefix1' => $middleware1,
           ]))->stripPrefix(false);
 ```
+
+### `attribute(string $attribute)`
+
+The attribute name used to store the handler in the server request. The default attribute name is `request-handler`.
 
 ---
 
