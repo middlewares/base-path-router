@@ -37,7 +37,7 @@ class BasePathRouterTest extends TestCase
                     echo $request->getUri()->getPath();
                 },
             ],
-            Factory::createServerRequest([], 'GET', $path)
+            Factory::createServerRequest('GET', $path)
         );
 
         $this->assertSame($body, (string) $response->getBody());
@@ -51,7 +51,7 @@ class BasePathRouterTest extends TestCase
         ]);
 
         $response = $router->process(
-            Factory::createServerRequest([], 'GET', '/foo/longer/path'),
+            Factory::createServerRequest('GET', '/foo/longer/path'),
             self::returningRequestAttribute()
         );
 
@@ -65,7 +65,7 @@ class BasePathRouterTest extends TestCase
         ]);
 
         $response = $router->process(
-            Factory::createServerRequest([], 'GET', '/unknown'),
+            Factory::createServerRequest('GET', '/unknown'),
             self::returningRequestAttribute()
         );
 
@@ -79,7 +79,7 @@ class BasePathRouterTest extends TestCase
         ]);
 
         $response = $router->process(
-            Factory::createServerRequest([], 'GET', '/foo/mypath'),
+            Factory::createServerRequest('GET', '/foo/mypath'),
             self::returningRequestPath()
         );
 
@@ -92,7 +92,7 @@ class BasePathRouterTest extends TestCase
             ->stripPrefix(false);
 
         $response = $router->process(
-            Factory::createServerRequest([], 'GET', '/foo/mypath'),
+            Factory::createServerRequest('GET', '/foo/mypath'),
             self::returningRequestPath()
         );
 
