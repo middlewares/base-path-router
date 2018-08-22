@@ -133,13 +133,4 @@ class BasePathRouter implements MiddlewareInterface
 
         return $path;
     }
-
-    private function defaultResponse(ServerRequestInterface $request)
-    {
-        if ($this->defaultHandler) {
-            return $this->defaultHandler->handle($request);
-        }
-
-        return Factory::createResponse(404);
-    }
 }
