@@ -14,7 +14,7 @@ class BasePathRouterTest extends TestCase
     {
         return [
             ['/foo/foopath', 'something --- /foopath'],
-            ['/bar', 'something else --- '],
+            ['/bar', 'something else --- /'],
             ['/not-found', 'unknown --- /not-found'],
         ];
     }
@@ -29,6 +29,38 @@ class BasePathRouterTest extends TestCase
                 (new BasePathRouter([
                     '/foo' => 'something',
                     '/bar' => 'something else',
+                ]))->defaultHandler('unknown'),
+
+                function ($request) {
+                    echo $request->getAttribute('request-handler');
+                    echo ' --- ';
+                    echo $request->getUri()->getPath();
+                },
+            ],
+            Factory::createServerRequest('GET', $path)
+        );
+
+        $this->assertSame($body, (string) $response->getBody());
+    }
+
+    public function slashRouterDataProvider()
+    {
+        return [
+            ['/', 'base route --- /'],
+            ['/baz', 'base route --- /baz'],
+        ];
+    }
+
+    /**
+     * @dataProvider slashRouterDataProvider
+     */
+    public function testRoutingToSlashPrefixWorks(string $path, string $body)
+    {
+        $response = Dispatcher::run(
+            [
+                (new BasePathRouter([
+                    '/foo' => 'something',
+                    '/' => 'base route',
                 ]))->defaultHandler('unknown'),
 
                 function ($request) {

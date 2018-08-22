@@ -118,7 +118,7 @@ class BasePathRouter implements MiddlewareInterface
 
         return $request->withUri(
             $uri->withPath(
-                substr($uri->getPath(), strlen($prefix))
+                '/'.ltrim(substr($uri->getPath(), strlen($prefix)), '/')
             )
         );
     }
