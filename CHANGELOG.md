@@ -26,3 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Security
 
 - Nothing
+
+## 0.1.0 - 2018-08-22
+
+First version
