@@ -22,9 +22,9 @@ class BasePathRouter implements MiddlewareInterface
     private $stripPrefix = true;
 
     /**
-     * @var Handler
+     * @var bool
      */
-    private $defaultHandler;
+    private $continueOnError = false;
 
     /**
      * @var string Attribute name for handler reference
@@ -69,16 +69,13 @@ class BasePathRouter implements MiddlewareInterface
     }
 
     /**
-     * Provide a default request handler
-     *
-     * This request handler will be assigned to the current request whenever no
-     * prefix matches. By default, an empty 404 response will be returned.
-     *
-     * @param mixed $handler
+     * Configure if continue to the next middleware whenever no
+     * prefix matches. By default, it does not continue and an empty 404 response
+     * will be returned.
      */
-    public function defaultHandler($handler): self
+    public function continueOnError(bool $continueOnError = true): self
     {
-        $this->defaultHandler = $handler;
+        $this->continueOnError = $continueOnError;
 
         return $this;
     }
@@ -99,10 +96,8 @@ class BasePathRouter implements MiddlewareInterface
             }
         }
 
-        if ($this->defaultHandler) {
-            return $handler->handle(
-                $request->withAttribute($this->attribute, $this->defaultHandler)
-            );
+        if ($this->continueOnError) {
+            return $handler->handle($request);
         }
 
         return Factory::createResponse(404);

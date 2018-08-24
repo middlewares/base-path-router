@@ -13,23 +13,23 @@ class BasePathRouterTest extends TestCase
     public function routerDataProvider()
     {
         return [
-            ['/foo/foopath', 'something --- /foopath'],
-            ['/bar', 'something else --- /'],
-            ['/not-found', 'unknown --- /not-found'],
+            ['/foo/foopath', 'something --- /foopath', 200],
+            ['/bar', 'something else --- /', 200],
+            ['/not-found', '', 404],
         ];
     }
 
     /**
      * @dataProvider routerDataProvider
      */
-    public function testRoutingToPrefixesWorks(string $path, string $body)
+    public function testRoutingToPrefixesWorks(string $path, string $body, int $statusCode)
     {
         $response = Dispatcher::run(
             [
-                (new BasePathRouter([
+                new BasePathRouter([
                     '/foo' => 'something',
                     '/bar' => 'something else',
-                ]))->defaultHandler('unknown'),
+                ]),
 
                 function ($request) {
                     echo $request->getAttribute('request-handler');
@@ -41,6 +41,7 @@ class BasePathRouterTest extends TestCase
         );
 
         $this->assertSame($body, (string) $response->getBody());
+        $this->assertSame($statusCode, $response->getStatusCode());
     }
 
     public function slashRouterDataProvider()
@@ -58,10 +59,10 @@ class BasePathRouterTest extends TestCase
     {
         $response = Dispatcher::run(
             [
-                (new BasePathRouter([
+                new BasePathRouter([
                     '/foo' => 'something',
                     '/' => 'base route',
-                ]))->defaultHandler('unknown'),
+                ]),
 
                 function ($request) {
                     echo $request->getAttribute('request-handler');
@@ -73,6 +74,25 @@ class BasePathRouterTest extends TestCase
         );
 
         $this->assertSame($body, (string) $response->getBody());
+    }
+
+    public function testContinueOnError()
+    {
+        $response = Dispatcher::run(
+            [
+                (new BasePathRouter([
+                    '/foo' => 'something',
+                    '/' => 'base route',
+                ]))->continueOnError(),
+
+                function ($request) {
+                    echo 'Fallback';
+                },
+            ],
+            Factory::createServerRequest('GET', '/not-found')
+        );
+
+        $this->assertSame('Fallback', (string) $response->getBody());
     }
 
     public function testRoutingToPrefixesUsesMostSpecificPrefix()
@@ -88,20 +108,6 @@ class BasePathRouterTest extends TestCase
         );
 
         $this->assertSame('longer', (string) $response->getBody());
-    }
-
-    public function testUnknownPrefixResultsIn404()
-    {
-        $router = new BasePathRouter([
-            '/foo' => 'something',
-        ]);
-
-        $response = $router->process(
-            Factory::createServerRequest('GET', '/unknown'),
-            self::returningRequestAttribute()
-        );
-
-        $this->assertSame(404, $response->getStatusCode());
     }
 
     public function testNextMiddlewareReceivesRequestWithoutPrefix()
