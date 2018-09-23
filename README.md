@@ -49,23 +49,9 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 Array with the paths (as keys) and handlers (as values).
 
-#### `defaultHandler(mixed $handler)`
+#### `continueOnError(true)`
 
-By default, non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes) will result in an empty 404 response.
-
-This behavior can be changed with the `defaultHandler` method, to assign a default handler to all remaining requests.
-
-```php
-$dispatcher = new Dispatcher([
-    (new Middlewares\BasePathRouter([
-        '/admin' => $admin,
-        '/admin/login' => $adminLogin,
-        '/blog' => $blog,
-    ]))->defaultHandler($everythingElse),
-
-    new Middlewares\RequestHandler()
-]);
-```
+Set `true` to continue to the next middleware instead return an empty 404 response for non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes).
 
 #### `stripPrefix(bool $stripPrefix)`
 
@@ -76,8 +62,8 @@ If you want to disable this behavior, use the `stripPrefix` method:
 
 ```php
 $router = (new Middlewares\BasePathRouter([
-              '/prefix1' => $middleware1,
-          ]))->stripPrefix(false);
+        '/prefix1' => $middleware1,
+    ]))->stripPrefix(false);
 ```
 
 #### `attribute(string $attribute)`
