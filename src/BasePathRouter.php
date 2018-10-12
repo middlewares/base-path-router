@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Middlewares;
 
 use Middlewares\Utils\Factory;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,13 +28,19 @@ class BasePathRouter implements MiddlewareInterface
     private $continueOnError = false;
 
     /**
+     * @var ResponseFactoryInterface
+     */
+    private $responseFactory;
+
+    /**
      * @var string Attribute name for handler reference
      */
     private $attribute = 'request-handler';
 
-    public function __construct(array $middlewares)
+    public function __construct(array $middlewares, ResponseFactoryInterface $responseFactory = null)
     {
         $this->middlewares = $middlewares;
+        $this->responseFactory = $responseFactory ?: Factory::getResponseFactory();
 
         // Make sure the longest path prefixes are matched first
         // (otherwise, a path /foo would always match, even when /foo/bar
@@ -100,7 +107,7 @@ class BasePathRouter implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        return Factory::createResponse(404);
+        return $this->responseFactory->createResponse(404);
     }
 
     private function unprefixedRequest(ServerRequestInterface $request, string $prefix): ServerRequestInterface
