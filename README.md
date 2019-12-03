@@ -10,7 +10,7 @@ A middleware dispatching to other middleware stacks, based on different path pre
 
 ## Requirements
 
-* PHP >= 7.0
+* PHP >= 7.2
 * A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 
@@ -24,7 +24,7 @@ composer require middlewares/base-path-router
 
 You may also want to install [middlewares/request-handler](https://packagist.org/packages/middlewares/request-handler).
 
-## Usage
+## Example
 
 This example uses [middleware/request-handler](https://github.com/middlewares/request-handler) to execute the route handler:
 
@@ -43,17 +43,31 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 **BasePathRouter** allows anything to be defined as the router handler (a closure, callback, action object, controller class, etc). The middleware will store this handler in a request attribute.
 
-## Options
+## Usage
 
-#### `__construct(array $middlewares)`
+You have to set an array of paths (as keys) and handlers (as values).
 
-Array with the paths (as keys) and handlers (as values).
+```php
+$router = new Middlewares\BasePathRouter([
+    '/foo' => $routerFoo,
+    '/bar' => $routerBar,
+    '/foo/bar' => $routerFooBar,
+]);
+```
 
-#### `continueOnError(true)`
+Optionally, you can provide a `Psr\Http\Message\ResponseFactoryInterface` as the second argument, to create the error responses (`404`) if the router is not found. If it's not defined, [Middleware\Utils\Factory](https://github.com/middlewares/utils#factory) will be used to detect it automatically.
+
+```php
+$responseFactory = new MyOwnResponseFactory();
+
+$router = new Middlewares\BasePathRouter($paths, $responseFactory);
+```
+
+### continueOnError
 
 Set `true` to continue to the next middleware instead return an empty 404 response for non-matching requests (i.e. those that do not have an URI path start with one of the provided prefixes).
 
-#### `stripPrefix(bool $stripPrefix)`
+### stripPrefix
 
 By default, subsequent middleware will receive a slightly manipulated request object: any matching path prefixes will be stripped from the URI.
 This helps when you have a hierarchical setup of routers, where subsequent routers (e.g. one for the API stack mounted under the `/api` endpoint) can ignore the common prefix.
@@ -66,9 +80,19 @@ $router = (new Middlewares\BasePathRouter([
     ]))->stripPrefix(false);
 ```
 
-#### `attribute(string $attribute)`
+### attribute
 
 The attribute name used to store the handler in the server request. The default attribute name is `request-handler`.
+
+```php
+$dispatcher = new Dispatcher([
+    //Save the route handler in an attribute called "route"
+    (new Middlewares\BasePathRouter($paths))->attribute('route'),
+
+    //Execute the route handler
+    (new Middlewares\RequestHandler())->attribute('route')
+]);
+```
 
 ---
 
