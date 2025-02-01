@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.2] - Unreleased
 ### Fixed
 - Compatibility with middlewares/util:^4.0 [#5]
+- Support for PHP 8.4.
 
 ## [2.0.1] - 2020-12-02
 ### Added
