@@ -1,9 +1,12 @@
 # Change Log
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+## [2.0.2] - Unreleased
+### Fixed
+- Compatibility with middlewares/util:^4.0 [#5]
 
 ## [2.0.1] - 2020-12-02
 ### Added
@@ -32,13 +35,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - Update `middlewares/utils` library for compatibility with `middlewares/request-handler`.
 
-## 0.1.0 - 2018-08-22
+## [0.1.0] - 2018-08-22
 First version
 
 [#3]: https://github.com/middlewares/base-path-router/issues/3
+[#5]: https://github.com/middlewares/base-path-router/issues/5
 
+[2.0.2]: https://github.com/middlewares/base-path-router/compare/v2.0.1...HEAD
 [2.0.1]: https://github.com/middlewares/base-path-router/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/middlewares/base-path-router/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/middlewares/base-path-router/compare/v0.2.1...v1.0.0
 [0.2.1]: https://github.com/middlewares/base-path-router/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/middlewares/base-path-router/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/middlewares/base-path-router/releases/tag/v0.1.0
