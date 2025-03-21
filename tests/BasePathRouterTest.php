@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Middlewares\Tests;
 
 use Middlewares\BasePathRouter;
@@ -10,7 +12,10 @@ use PHPUnit\Framework\TestCase;
 
 class BasePathRouterTest extends TestCase
 {
-    public function routerDataProvider()
+    /**
+     * @return array<array<string|int>>
+     */
+    public function routerDataProvider(): array
     {
         return [
             ['/foo/foopath', 'something --- /foopath', 200],
@@ -22,7 +27,7 @@ class BasePathRouterTest extends TestCase
     /**
      * @dataProvider routerDataProvider
      */
-    public function testRoutingToPrefixesWorks(string $path, string $body, int $statusCode)
+    public function testRoutingToPrefixesWorks(string $path, string $body, int $statusCode): void
     {
         $response = Dispatcher::run(
             [
@@ -44,7 +49,10 @@ class BasePathRouterTest extends TestCase
         $this->assertSame($statusCode, $response->getStatusCode());
     }
 
-    public function slashRouterDataProvider()
+    /**
+     * @return array<array<string>>
+     */
+    public function slashRouterDataProvider(): array
     {
         return [
             ['/', 'base route --- /'],
@@ -55,7 +63,7 @@ class BasePathRouterTest extends TestCase
     /**
      * @dataProvider slashRouterDataProvider
      */
-    public function testRoutingToSlashPrefixWorks(string $path, string $body)
+    public function testRoutingToSlashPrefixWorks(string $path, string $body): void
     {
         $response = Dispatcher::run(
             [
@@ -76,7 +84,7 @@ class BasePathRouterTest extends TestCase
         $this->assertSame($body, (string) $response->getBody());
     }
 
-    public function testContinueOnError()
+    public function testContinueOnError(): void
     {
         $response = Dispatcher::run(
             [
@@ -95,7 +103,7 @@ class BasePathRouterTest extends TestCase
         $this->assertSame('Fallback', (string) $response->getBody());
     }
 
-    public function testRoutingToPrefixesUsesMostSpecificPrefix()
+    public function testRoutingToPrefixesUsesMostSpecificPrefix(): void
     {
         $router = new BasePathRouter([
             '/foo' => 'shorter',
@@ -110,7 +118,7 @@ class BasePathRouterTest extends TestCase
         $this->assertSame('longer', (string) $response->getBody());
     }
 
-    public function testNextMiddlewareReceivesRequestWithoutPrefix()
+    public function testNextMiddlewareReceivesRequestWithoutPrefix(): void
     {
         $router = new BasePathRouter([
             '/foo' => 'foo.middleware',
@@ -124,7 +132,7 @@ class BasePathRouterTest extends TestCase
         $this->assertSame('/mypath', (string) $response->getBody());
     }
 
-    public function testPrefixStrippingCanBeDisabled()
+    public function testPrefixStrippingCanBeDisabled(): void
     {
         $router = (new BasePathRouter(['/foo' => 'foo.middleware']))
             ->stripPrefix(false);
@@ -137,14 +145,14 @@ class BasePathRouterTest extends TestCase
         $this->assertSame('/foo/mypath', (string) $response->getBody());
     }
 
-    private static function returningRequestAttribute()
+    private static function returningRequestAttribute(): CallableHandler
     {
         return new CallableHandler(function ($req) {
             return $req->getAttribute('request-handler');
         });
     }
 
-    private static function returningRequestPath()
+    private static function returningRequestPath(): CallableHandler
     {
         return new CallableHandler(function ($req) {
             return $req->getUri()->getPath();
