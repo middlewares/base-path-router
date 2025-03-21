@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.1.0] - 2025-03-21
-### Added
-- Support for PHP 8.4
-
 ## [2.0.2] - 2025-02-01
 ### Fixed
 - Compatibility with middlewares/util:^4.0 [#5]
@@ -46,7 +42,6 @@ First version
 [#3]: https://github.com/middlewares/base-path-router/issues/3
 [#5]: https://github.com/middlewares/base-path-router/issues/5
 
-[2.1.0]: https://github.com/middlewares/base-path-router/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/middlewares/base-path-router/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/middlewares/base-path-router/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/middlewares/base-path-router/compare/v1.0.0...v2.0.0
